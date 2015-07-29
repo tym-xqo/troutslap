@@ -1,0 +1,15 @@
+*.pyc
+junk_drawer/
+# Virtualenv stuffs
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ss]cripts
+pyvenv.cfg
+pip-selfcheck.json
+# Apple weirdness and such
+.DS_Store
+*.swp
+# Sublime
+*.sublime-*
