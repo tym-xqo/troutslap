@@ -15,7 +15,7 @@ slacktoken = os.getenv('SLACKTOKEN')
 
 
 @slack.command('slap', token=os.getenv('TOKEN'),
-               team_id='T02594HP0', methods=['POST'])
+               team_id=os.getenv('TEAM'), methods=['POST'])
 def slap_someone(**kwargs):
     channel = kwargs.get('channel_name')
     channel = u'#%s' % channel
