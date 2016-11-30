@@ -13,32 +13,27 @@ app.add_url_rule('/', view_func=slack.dispatch)
 # On GCE, we have files mounted at /secret for
 # incoming webhook URL and team token
 # Or you can hard-code values in the except blocks below.
-# try:
-#     with open('/secret/hookurl', 'r') as hookf:
-#         url = hookf.read().strip()
-# except:
-#     url = ("https://hooks.slack.com/services/"
-#            "T02594HP0/B081REU01/PjOvu5UAGNgVKUTydc3GqS6L")  # <- fake ;)
-# try:
-#     with open('/secret/token', 'r') as tokenf:
-#         valid = tokenf.read().strip()
-# except:
-#     valid = "bZKQqL4qkCOORlwzJRAPAvNc"  # phony
-# try:
-#     with open('/secret/teamid', 'r') as teamf:
-#         team = teamf.read().strip()
-# except:
-#     team = "T02594HP0"  # phony
-# try:
-#     with open('/secret/slacktoken', 'r') as slacktokenf:
-#         slacktoken = slacktokenf.read().strip()
-# except:
-#     slacktoken = "bZKQqL4qkCOORlwKQqzJRAPORlwzZKQqL4qkAvNc"
-
-url = os.getenv('HOOKURL')
-valid = os.getenv('TOKEN')
-team = os.getenv('TEAM')
-slacktoken = os.getenv('SLACKTOKEN')
+try:
+    with open('/secret/hookurl', 'r') as hookf:
+        url = hookf.read().strip()
+except:
+    url = os.getenv('HOOKURL', "https://hooks.slack.com/services/"
+                               "T02594HP0/B081REU01/PjOvu5UAGNgVKUTydc3GqS6L")
+try:
+    with open('/secret/token', 'r') as tokenf:
+        valid = tokenf.read().strip()
+except:
+    valid = os.getenv('TOKEN', "bZKQqL4qkCOORlwzJRAPAvNc")  # phony
+try:
+    with open('/secret/teamid', 'r') as teamf:
+        team = teamf.read().strip()
+except:
+    team = os.getenv('TEAM', "T02594HP0")  # phony
+try:
+    with open('/secret/slacktoken', 'r') as slacktokenf:
+        slacktoken = slacktokenf.read().strip()
+except:
+    slacktoken = os.getenv('SLACKTOKEN', "bZKQqL4qkCOORlwKQqzRlwzZKQqL4qkAvNc")
 
 
 @slack.command('slap', token=valid,
