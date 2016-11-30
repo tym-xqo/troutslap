@@ -1,5 +1,5 @@
 FROM alpine:3.4
-MAINTAINER tym@adops.com
+MAINTAINER kzfrb3
 
 RUN apk update && \
 apk add --update python3 \
