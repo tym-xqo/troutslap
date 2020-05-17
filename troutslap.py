@@ -1,77 +1,88 @@
-from flask import Flask
-from flask_slack import Slack
-import requests
-import json
-import slack as slackapi
-from slack import users
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
 
+import slack
+from dotenv import load_dotenv
+from flask import Flask, request
+from slack.errors import SlackApiError
+
 app = Flask(__name__)
-slack = Slack(app)
-app.add_url_rule('/', view_func=slack.dispatch)
 
-# On GCE, we have files mounted at /secret for
-# incoming webhook URL and team token
-# Or you can hard-code values in the except blocks below.
-try:
-    with open('/secret/hookurl', 'r') as hookf:
-        url = hookf.read().strip()
-except:
-    url = os.getenv('HOOKURL', "https://hooks.slack.com/services/"
-                               "T02594HP0/B081REU01/PjOvu5UAGNgVKUTydc3GqS6L")
-try:
-    with open('/secret/token', 'r') as tokenf:
-        valid = tokenf.read().strip()
-except:
-    valid = os.getenv('TOKEN', "bZKQqL4qkCOORlwzJRAPAvNc")  # phony
-try:
-    with open('/secret/teamid', 'r') as teamf:
-        team = teamf.read().strip()
-except:
-    team = os.getenv('TEAM', "T02594HP0")  # phony
-try:
-    with open('/secret/slacktoken', 'r') as slacktokenf:
-        slacktoken = slacktokenf.read().strip()
-except:
-    slacktoken = os.getenv('SLACKTOKEN', "bZKQqL4qkCOORlwKQqzRlwzZKQqL4qkAvNc")
+load_dotenv()
 
+valid = os.getenv("TOKEN")
+slacktoken = os.getenv("SLACKTOKEN")
 
-@slack.command('slap', token=valid,
-               team_id=team, methods=['POST'])
-def slap_someone(**kwargs):
-    channel = kwargs.get('channel_id')
-    slappee = kwargs.get('text')
-    payload = {'icon_emoji': ':fish:', 'username': 'Troutslap!',
-               'channel': channel, 'unfurl_links': True}
-    if slappee == '':
-        message = '<http://i.imgur.com/R26mope.gifv>'
-        payload.update({'text': message})
-        r = requests.post(url, data=json.dumps(payload))
-        return slack.response('')
-    else:
-        slappee = slappee.replace('@', '')
-        slappee_id = user_id_from_name(slappee)
-
-        slapper_id = kwargs.get('user_id')
-        slapper = kwargs.get('user_name')
-
-        message = ('<@{}|{}> slaps <@{}|{}> around a bit with a large trout!'
-                   .format(slapper_id, slapper, slappee_id, slappee))
-        payload.update({'text': message})
-        r = requests.post(url, data=json.dumps(payload))
-        return slack.response('')
+client = slack.WebClient(slacktoken)
 
 
 def user_id_from_name(user):
-    slackapi.api_token = slacktoken
-    r = users.list()
-    list = r['members']
-    user_id = ''
+    """ Lookup user_id from a given username via Slack API
+    """
+    user = user.replace("@", "")
+    r = client.users_list()
+    list = r["members"]
+    user_id = ""
     for u in list:
-        if u['name'] == user:
-            user_id = u['id']
-    i = users.info(user_id)
-    return i['user']['id']
+        if u["profile"]["display_name"] == user:
+            user_id = u["id"]
+    return user_id
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+
+def slack_post(channel, blocks=[], title=None, message=None, color="#999999"):
+    """Send a message to Slack
+    """
+    attach = dict(fallback=message, title=title, text=message, color=color)
+    try:
+        post = client.chat_postMessage(
+            channel=channel,
+            attachments=[attach],
+            username=f"Troutslap!",
+            icon_emoji=":fish:",
+            blocks=blocks,
+        )
+    except SlackApiError:
+        # TODO: send something to poster here
+        post = None
+    return post
+
+
+def slap_gif(channel):
+    blocks = [
+        {
+            "type": "image",
+            "title": {"type": "plain_text", "text": "image1", "emoji": True},
+            "image_url": "https://i.imgur.com/R26mope.gif",
+            "alt_text": "image1",
+        }
+    ]
+    response = slack_post(channel=channel, blocks=blocks)
+    return response
+
+
+@app.route("/", methods=["POST"])
+def index():
+    if request.form["token"] != valid:
+        return "nope", 403
+    channel = request.form["channel_id"]
+    if request.form["channel_name"] == "directmessage":
+        channel = request.form["user_id"]
+    if request.form["text"] == "":
+        slap_gif(channel)
+    else:
+        slapped_user = request.form["text"].replace("@", "")
+        slapped_user_id = user_id_from_name(slapped_user)
+
+        slapping_user_id = request.form["user_id"]
+        slapping_user = request.form["user_name"]
+
+        message = "<@{}|{}> slaps <@{}|{}> around a bit with a large trout!".format(
+            slapping_user_id, slapping_user, slapped_user_id, slapped_user
+        )
+        slack_post(channel=channel, message=message)
+    return "", 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
