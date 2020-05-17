@@ -59,7 +59,6 @@ def index():
     and Y is a username specified in the text of the slash command request
     If the text is empty, it sends the fish-slapping dance gif
     """
-    print(request.form)
     # Verify the token sent by the slash command
     if request.form["token"] != valid:
         return "nope", 403
@@ -71,8 +70,7 @@ def index():
         slap_gif(channel)
 
     else:
-        slapped_user = request.form["text"]  # .replace("@", "")
-        # slapped_user_id = user_id_from_name(slapped_user)
+        slapped_user = request.form["text"]
 
         slapping_user_id = request.form["user_id"]
         slapping_user = request.form["user_name"]
