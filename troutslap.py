@@ -17,19 +17,6 @@ slacktoken = os.getenv("SLACKTOKEN")
 client = slack.WebClient(slacktoken)
 
 
-def user_id_from_name(user):
-    """ Lookup user_id from a given username via Slack API
-    """
-    user = user.replace("@", "")
-    r = client.users_list()
-    list = r["members"]
-    user_id = ""
-    for u in list:
-        if u["profile"]["display_name"] == user:
-            user_id = u["id"]
-    return user_id
-
-
 def slack_post(channel, blocks=[], title=None, message=None, color="#999999"):
     """Send a message to Slack
     """
@@ -83,14 +70,13 @@ def index():
         slap_gif(channel)
 
     else:
-        slapped_user = request.form["text"].replace("@", "")
-        slapped_user_id = user_id_from_name(slapped_user)
+        slapped_user = request.form["text"]
 
         slapping_user_id = request.form["user_id"]
         slapping_user = request.form["user_name"]
 
-        message = "<@{}|{}> slaps <@{}|{}> around a bit with a large trout!".format(
-            slapping_user_id, slapping_user, slapped_user_id, slapped_user
+        message = "<@{}|{}> slaps {} around a bit with a large trout!".format(
+            slapping_user_id, slapping_user, slapped_user
         )
         slack_post(channel=channel, message=message)
     return "", 200
