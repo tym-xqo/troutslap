@@ -49,6 +49,9 @@ def slack_post(channel, blocks=[], title=None, message=None, color="#999999"):
 
 
 def slap_gif(channel):
+    """ Format a message that just sends a gif of the fish-slapping dance
+    from Monty Python
+    """
     blocks = [
         {
             "type": "image",
@@ -63,13 +66,22 @@ def slap_gif(channel):
 
 @app.route("/", methods=["POST"])
 def index():
+    """ Respond to Slack slash command.
+    Generally expects a username, and sends a bot message like:
+    `X slaps Y around a bit with a large trout!` where X is the sender
+    and Y is a username specified in the text of the slash command request
+    If the text is empty, it sends the fish-slapping dance gif
+    """
+    # Verify the token sent by the slash command
     if request.form["token"] != valid:
         return "nope", 403
+
+    # TODO: figure out DMs
     channel = request.form["channel_id"]
-    if request.form["channel_name"] == "directmessage":
-        channel = request.form["user_id"]
+
     if request.form["text"] == "":
         slap_gif(channel)
+
     else:
         slapped_user = request.form["text"].replace("@", "")
         slapped_user_id = user_id_from_name(slapped_user)
