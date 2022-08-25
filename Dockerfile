@@ -10,8 +10,8 @@ WORKDIR /troutslap
 
 COPY . /troutslap/
 
-RUN pip3 install --upgrade pip pipenv gunicorn
-RUN pipenv install --system
+RUN pip3 install --upgrade pip gunicorn
+RUN python3 -m pip install -r requirements.txt
 
 EXPOSE 5000
 
