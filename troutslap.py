@@ -74,8 +74,9 @@ def index():
         slapping_user_id = request.form["user_id"]
         slapping_user = request.form["user_name"]
 
-        message = "<@{}|{}> slaps {} around a bit with a large trout!".format(
-            slapping_user_id, slapping_user, slapped_user
+        message = (
+            f"<@{slapping_user_id}|{slapping_user}> slaps {slapped_user}"
+            " around a bit with a large trout!"
         )
         slack_post(channel=channel, message=message)
     return "", 200
