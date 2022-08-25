@@ -18,14 +18,13 @@ client = slack.WebClient(slacktoken)
 
 
 def slack_post(channel, blocks=[], title=None, message=None, color="#999999"):
-    """Send a message to Slack
-    """
+    """Send a message to Slack"""
     attach = dict(fallback=message, title=title, text=message, color=color)
     try:
         post = client.chat_postMessage(
             channel=channel,
             attachments=[attach],
-            username=f"Troutslap!",
+            username="Troutslap!",
             icon_emoji=":fish:",
             blocks=blocks,
         )
@@ -36,7 +35,7 @@ def slack_post(channel, blocks=[], title=None, message=None, color="#999999"):
 
 
 def slap_gif(channel):
-    """ Format a message that just sends a gif of the fish-slapping dance
+    """Format a message that just sends a gif of the fish-slapping dance
     from Monty Python
     """
     blocks = [
@@ -53,7 +52,7 @@ def slap_gif(channel):
 
 @app.route("/", methods=["POST"])
 def index():
-    """ Respond to Slack slash command.
+    """Respond to Slack slash command.
     Generally expects a username, and sends a bot message like:
     `X slaps Y around a bit with a large trout!` where X is the sender
     and Y is a username specified in the text of the slash command request
