@@ -1,10 +1,5 @@
-FROM alpine:latest
+FROM python:3-slim
 LABEL maintainer="thomas@yager-madden.com"
-
-RUN apk add --no-cache python3 \
-    python3-dev \
-    py3-pip \
-    build-base
 
 RUN mkdir /troutslap
 WORKDIR /troutslap
